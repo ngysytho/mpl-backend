@@ -1,0 +1,140 @@
+# Local environment only. Keycloak uses start (not start-dev), with local HTTP enabled explicitly.
+services:
+  app-db:
+    image: postgres:17.6-bookworm
+    environment:
+      POSTGRES_DB: user_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${APP_DB_ADMIN_PASSWORD:?Set APP_DB_ADMIN_PASSWORD}
+      APP_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:?Set DB_MIGRATION_PASSWORD}
+      APP_RUNTIME_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    ports: ["127.0.0.1:${APP_DB_PORT:-5432}:5432"]
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+      - ./docker/init-app-db.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d user_service_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  keycloak-db:
+    image: postgres:17.6-bookworm
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_ADMIN_PASSWORD:?Set KEYCLOAK_DB_ADMIN_PASSWORD}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Set KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+      - ./docker/init-keycloak-db.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d keycloak_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.5
+    command: ["start"]
+    mem_limit: 1g
+    environment:
+      JAVA_OPTS_KC_HEAP: "-Xms128m -Xmx512m"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak_db
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?Set KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_BOOTSTRAP_ADMIN_USERNAME:-bootstrap-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD:?Set bootstrap admin password}
+    ports: ["127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"]
+    depends_on:
+      keycloak-db: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000; printf \"GET /health/ready HTTP/1.0\\r\\n\\r\\n\" >&3; head -1 <&3 | grep -q 200'"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 180s
+    restart: unless-stopped
+  migration:
+    image: ${MIGRATION_IMAGE:-mpl-db-migrations:1.0.0}
+    command: ["update"]
+    mem_limit: 512m
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms64m -Xmx384m"
+      DB_URL: jdbc:postgresql://app-db:5432/user_service_db
+      DB_MIGRATION_USERNAME: app_migrator
+      DB_MIGRATION_PASSWORD: ${DB_MIGRATION_PASSWORD:?Set DB_MIGRATION_PASSWORD}
+    depends_on:
+      app-db: {condition: service_healthy}
+    restart: "no"
+  keycloak-config:
+    image: ${IAM_IMAGE:-mpl-iam:1.0.0}
+    profiles: [iam]
+    command: ["apply"]
+    mem_limit: 768m
+    environment:
+      SWAGGER_PUBLIC_URL: ${SWAGGER_PUBLIC_URL:-http://localhost:8080}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:?Set KEYCLOAK_CLIENT_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_USER: ${KEYCLOAK_BOOTSTRAP_ADMIN_USERNAME:-bootstrap-admin}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_BOOTSTRAP_ADMIN_PASSWORD:?Set bootstrap admin password}
+      KEYCLOAK_STATE_ENCRYPTION_KEY: ${KEYCLOAK_STATE_ENCRYPTION_KEY:?Set config state encryption key}
+      MPL_IAM_APPLY_APPROVED: ${MPL_IAM_APPLY_APPROVED:-false}
+    depends_on:
+      keycloak: {condition: service_healthy}
+    restart: "no"
+  iam-contract:
+    image: ${IAM_IMAGE:-mpl-iam:1.0.0}
+    command: ["contract"]
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ISSUER_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}/realms/user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:?Set KEYCLOAK_CLIENT_SECRET}
+    depends_on:
+      keycloak: {condition: service_healthy}
+    restart: "no"
+  api:
+    image: ${BACKEND_IMAGE:-mpl-be:1.0.0}
+    mem_limit: 768m
+    environment:
+      APP_PORT: ${APP_PORT:-8080}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:?Set KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_REALM: user-service
+      KEYCLOAK_CLIENT_ID: user-service-admin
+      JWT_AUDIENCE: user-service-api
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-INFO}
+      SPRING_PROFILES_ACTIVE: local
+      DB_URL: jdbc:postgresql://app-db:5432/user_service_db
+      DB_USERNAME: app_runtime
+      KEYCLOAK_ADMIN_URL: http://keycloak:8080
+      KEYCLOAK_ISSUER_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8081}/realms/user-service
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/user-service/protocol/openid-connect/certs
+    ports: ["127.0.0.1:${APP_PORT:-8080}:${APP_PORT:-8080}"]
+    depends_on:
+      app-db: {condition: service_healthy}
+      migration: {condition: service_completed_successfully}
+      iam-contract: {condition: service_completed_successfully}
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    restart: unless-stopped
+volumes:
+  app-db-data:
+  keycloak-db-data:

@@ -1,0 +1,19 @@
+spring:
+  liquibase:
+    enabled: false
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+app:
+  sync:
+    enabled: false
+  security:
+    issuer: https://issuer.example/realms/user-service
+    jwk-set-uri: https://issuer.example/certs
+    audience: user-service-api
+    cors-origins: https://frontend.example
+  keycloak:
+    admin-base-url: http://127.0.0.1:1
+    realm: user-service
+    client-id: test-client
+    client-secret: test-only-not-a-real-credential

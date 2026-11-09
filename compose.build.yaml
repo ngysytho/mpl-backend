@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+  migration:
+    build: ../mpl-db-migrations
+  keycloak-config:
+    build: ../mpl-iam
+  iam-contract:
+    build: ../mpl-iam

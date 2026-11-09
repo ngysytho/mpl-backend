@@ -1,0 +1,244 @@
+{
+  "date": "2026-11-09",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "status": "PASS_LOCAL",
+  "productionReadiness": "NOT_CLAIMED",
+  "baseline": {
+    "javaUnitTests": 45,
+    "postgresIntegration": "FAIL: invalid inclide master node"
+  },
+  "backendUnitSuites": [
+    {
+      "name": "com.example.userservice.ArchitectureTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.config.DatabaseConfigTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.integration.keycloak.KeycloakAdminClientTest",
+      "tests": "13",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.entity.UserTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.mapper.UserPersistenceMapperTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.repository.IdentitySyncMetricsTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.service.UserRegistrationServiceTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.service.UserServiceTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.modules.user.specification.UserSpecificationsTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.security.JwtValidationTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.security.UserSecurityTest",
+      "tests": "11",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "backendIntegrationSuites": [
+    {
+      "name": "com.example.userservice.integration.RealKeycloakIT",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.example.userservice.integration.UserPersistenceIT",
+      "tests": "20",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "migrationTests": {
+    "unit": 3,
+    "postgresIntegration": 1,
+    "status": "PASS"
+  },
+  "iamOfflineTests": 3,
+  "operationalPythonTests": 7,
+  "frontendNodeTests": 1,
+  "composeAcceptance": {
+    "project": "mpl-acceptance-8150fd54723c",
+    "status": "PASS",
+    "checks": [
+      "migration job",
+      "IAM apply/reapply",
+      "read-only IAM contract",
+      "API readiness",
+      "registration replay",
+      "PKCE issuer/audience/USER",
+      "authenticated API smoke",
+      "USER forbidden administrator access",
+      "real Keycloak lifecycle",
+      "empty pending/incomplete journals",
+      "ADMIN token mapping and protected metrics"
+    ],
+    "metrics": {
+      "user.identity.sync.pending": [
+        {
+          "statistic": "VALUE",
+          "value": 0.0
+        }
+      ],
+      "user.identity.provisioning.incomplete": [
+        {
+          "statistic": "VALUE",
+          "value": 0.0
+        }
+      ],
+      "user.identity.sync.attempts": [
+        {
+          "statistic": "COUNT",
+          "value": 2.0
+        }
+      ],
+      "user.identity.sync.delivery.duration": [
+        {
+          "statistic": "COUNT",
+          "value": 2.0
+        },
+        {
+          "statistic": "TOTAL_TIME",
+          "value": 0.166312143
+        },
+        {
+          "statistic": "MAX",
+          "value": 0.159561607
+        }
+      ],
+      "user.identity.sync.lock.wait": [
+        {
+          "statistic": "COUNT",
+          "value": 2.0
+        },
+        {
+          "statistic": "TOTAL_TIME",
+          "value": 0.030633141
+        },
+        {
+          "statistic": "MAX",
+          "value": 0.027150668
+        }
+      ],
+      "user.identity.sync.latency": [
+        {
+          "statistic": "COUNT",
+          "value": 1.0
+        },
+        {
+          "statistic": "TOTAL_TIME",
+          "value": 0.93651
+        },
+        {
+          "statistic": "MAX",
+          "value": 0.93651
+        }
+      ]
+    }
+  },
+  "images": {
+    "backend": {
+      "image": "mpl-be:1.0.0",
+      "imageId": "sha256:684c1529286c8b4431fd18e3bc4ec866f4fa51260b632517b0d4fec14048ebb4",
+      "repoDigests": [
+        "mpl-be@sha256:684c1529286c8b4431fd18e3bc4ec866f4fa51260b632517b0d4fec14048ebb4"
+      ]
+    },
+    "migrations": {
+      "image": "mpl-db-migrations:1.0.0",
+      "imageId": "sha256:d62840d80e9169ca7a9bae6ff156bff7725505994f5758869ac0b1cc9288c7c6",
+      "repoDigests": [
+        "mpl-db-migrations@sha256:d62840d80e9169ca7a9bae6ff156bff7725505994f5758869ac0b1cc9288c7c6"
+      ]
+    },
+    "iam": {
+      "image": "mpl-iam:1.0.0",
+      "imageId": "sha256:6dd2b9fa91678ef855739762ce4460395ae56e744fe2e7dc471980f43f1ad144",
+      "repoDigests": [
+        "mpl-iam@sha256:6dd2b9fa91678ef855739762ce4460395ae56e744fe2e7dc471980f43f1ad144"
+      ]
+    },
+    "keycloak": {
+      "image": "quay.io/keycloak/keycloak:26.5.5",
+      "imageId": "sha256:a7b0cb7a43a1235a61872883414d3f1d9a3ceac9df6e5907bd12202778a6265c",
+      "repoDigests": [
+        "quay.io/keycloak/keycloak@sha256:a7b0cb7a43a1235a61872883414d3f1d9a3ceac9df6e5907bd12202778a6265c"
+      ]
+    },
+    "postgres": {
+      "image": "postgres:17.6-bookworm",
+      "imageId": "sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3",
+      "repoDigests": [
+        "postgres@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3"
+      ]
+    }
+  },
+  "migrationHistory": "Five existing local identities/checksums verified read-only; six source changeset files byte-identical",
+  "notRun": [
+    "production deployment",
+    "production history verification",
+    "production backup/restore rehearsal",
+    "SMTP delivery",
+    "sustained load/capacity",
+    "previous API rollback compatibility",
+    "registry promotion"
+  ],
+  "resolvedFailures": [
+    "baseline malformed changelog master",
+    "initial Keycloak startup health budget under concurrent local load",
+    "urllib Secure-cookie behavior for localhost PKCE"
+  ]
+}

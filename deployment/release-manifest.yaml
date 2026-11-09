@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "release": "mpl-1.0.0",
+  "components": {
+    "backend": {
+      "image": "mpl-be:1.0.0",
+      "version": "1.0.0",
+      "testedImageId": "sha256:684c1529286c8b4431fd18e3bc4ec866f4fa51260b632517b0d4fec14048ebb4"
+    },
+    "migrations": {
+      "image": "mpl-db-migrations:1.0.0",
+      "version": "1.0.0",
+      "liquibase": "5.0.4",
+      "testedImageId": "sha256:d62840d80e9169ca7a9bae6ff156bff7725505994f5758869ac0b1cc9288c7c6"
+    },
+    "iam": {
+      "image": "mpl-iam:1.0.0",
+      "version": "1.0.0",
+      "configCli": "6.5.1-26.5.5"
+    },
+    "keycloak": {
+      "image": "quay.io/keycloak/keycloak:26.5.5",
+      "version": "26.5.5",
+      "testedImageId": "sha256:a7b0cb7a43a1235a61872883414d3f1d9a3ceac9df6e5907bd12202778a6265c"
+    },
+    "postgres": {
+      "image": "postgres:17.6-bookworm",
+      "version": "17.6-bookworm",
+      "testedImageId": "sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3"
+    }
+  },
+  "schema": {
+    "database": "user_service_db",
+    "requiredChangesets": [
+      "user-create-profile-table-001",
+      "user-profile-indexes-002",
+      "user-profile-invariants-003",
+      "user-provisioning-sync-journal-004",
+      "user-self-registration-support-005"
+    ],
+    "compatibility": "Backend requires all five schema changes; only this release combination is a candidate. Future changes require expand-contract verification.",
+    "verifiedApiRollbackImages": []
+  },
+  "iamContract": {
+    "realm": "user-service",
+    "audience": "user-service-api",
+    "runtimeClient": "user-service-admin",
+    "frontendClient": "user-service-frontend"
+  },
+  "verification": {
+    "status": "PENDING_REVALIDATION",
+    "evidence": "deployment/verification-no-python-2026-11-09.json",
+    "productionReadiness": "NOT_CLAIMED",
+    "date": "2026-11-09"
+  }
+}

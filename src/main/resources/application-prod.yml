@@ -1,0 +1,15 @@
+spring:
+  liquibase:
+    # Run migrations in a deployment job using the migrator role before rollout.
+    enabled: false
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: false
+app:
+  security:
+    docs-enabled: false
+management:
+  endpoint:
+    health:
+      show-details: never

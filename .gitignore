@@ -1,0 +1,11 @@
+/target/
+/.env
+/.idea/
+*.iml
+*.log
+.DS_Store
+.mvn/wrapper/maven-wrapper.jar
+
+/.local/
+
+__pycache__/
